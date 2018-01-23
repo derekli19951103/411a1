@@ -11,35 +11,41 @@ import os
 from scipy.ndimage import filters
 import urllib
 
-act =['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-files=os.listdir("cropped")
-training=0
-validating=0
-testing=0
-actor=""
+act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+files = os.listdir("cropped")
+
+# name=''.join([i for i in f if not i.isdigit()])[:-4]
+
+# mpimg.imsave("training/" + files[0], pic)
+names_set = {}
 for file in files:
-    try:
-        pic = imread("cropped/" + file)
-        name=''.join([i for i in file if not i.isdigit()])
-        if actor=="":
-            actor=name
-            training+=1
-            mpimg.imsave("training/" + file, pic)
-        if actor==name:
-            if training<100:
-                training+=1
-                mpimg.imsave("training/"+file,pic)
-            if validating<10:
-                validating+=1
-                mpimg.imsave("validating/"+file,pic)
-            if testing<10:
-                testing+=1
-                mpimg.imsave("testing/"+file,pic)
-        if actor!=name:
-            actor=name
-            training=1
-            mpimg.imsave("training/"+file,pic)
-            validating=0
-            testing=0
-    except IOError:
-        pass
+    name = ''.join([i for i in file if not i.isdigit()]).split('.')[0]
+    if name not in names_set:
+        names_set[name] = [file]
+    else:
+        names_set[name].append(file)
+training = []
+validating = []
+testing = []
+count = 0
+for name, files in names_set.items():
+    for f in files:
+        if count < 70:
+            training.append(f)
+            count += 1
+        if 70 <= count < 80:
+            validating.append(f)
+            count += 1
+        if 80 <= count < 90:
+            testing.append(f)
+            count += 1
+    count = 0
+for it in training:
+    pic = imread("cropped/" + it)
+    mpimg.imsave("training/" + it, pic)
+for it in validating:
+    pic = imread("cropped/" + it)
+    mpimg.imsave("validating/" + it, pic)
+for it in testing:
+    pic = imread("cropped/" + it)
+    mpimg.imsave("testing/" + it, pic)

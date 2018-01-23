@@ -33,6 +33,6 @@ if __name__ == "__main__":
             if len(pic.shape)==3:
                 pic = rgb2gray(pic)
                 pic=imresize(pic,(32,32))
-                mpimg.imsave("cropped/"+file,pic)
+                mpimg.imsave("cropped/"+file,pic,format="png",cmap=cm.gray)
         except IOError:
             pass
