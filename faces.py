@@ -11,6 +11,15 @@ import os
 from scipy.ndimage import filters
 import urllib
 
+
+def determine(data, name):
+    (np.asarray(data) > 0.).sum() / 1024.
+    if name == 'baldwin':
+        return (np.asarray(data) > 0.).sum() > (np.asarray(data) <= 0.).sum()
+    if name == 'carell':
+        return (np.asarray(data) > 0.).sum() < (np.asarray(data) <= 0.).sum()
+
+
 files = os.listdir("cropped")
 act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
 names_set = {}
@@ -31,10 +40,10 @@ def f(x, y, theta):
 
 def df(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
-    print y.shape
-    print theta.shape
-    print dot(theta.T,x).shape
-    print x.shape
+    # print "y ", y.shape
+    # print "t ", theta.shape
+    # print "x_b ", dot(theta.T, x).shape
+    # print "x ", x.shape
     return -2 * sum((y - dot(theta.T, x)) * x, 1)
 
 
@@ -42,7 +51,7 @@ def grad_descent(f, df, x, y, init_t, alpha):
     EPS = 1e-5  # EPS = 10**(-5)
     prev_t = init_t - 10 * EPS
     t = init_t.copy()
-    max_iter = 30000
+    max_iter = 100000
     iter = 0
     while norm(t - prev_t) > EPS and iter < max_iter:
         prev_t = t.copy()
@@ -54,67 +63,69 @@ def grad_descent(f, df, x, y, init_t, alpha):
         iter += 1
     return t
 
-y = array([[1]*32+[-1]*32]*32)
-theta1 = array([[0.]*32]*33)
-for i in range(70):
+
+theta1 = np.random.random_sample((33, 33))
+for i in range(10):
     pic1 = imread('cropped/' + baldwin[i])
-    pic2 = imread('cropped/' + carell[i])
     pic1 = pic1[:, :, 0] / 255.
-    pic2 = pic2[:, :, 0] / 255.
-    x = hstack((pic1, pic2))
+    x = pic1
+    y = array([[1] * 32] * 33)
+    theta1 = grad_descent(f, df, x, y, theta1, 0.0000010)
+    pic1 = imread('cropped/' + carell[i])
+    pic1 = pic1[:, :, 0] / 255.
+    x = pic1
+    y = array([[-1] * 32] * 33)
     theta1 = grad_descent(f, df, x, y, theta1, 0.0000010)
 
 baldwin = names_set["baldwin"][70:80]
 carell = names_set["carell"][70:80]
-theta2 = array([[0.]*32]*33)
+theta2 = np.random.random_sample((33, 33))
 for i in range(10):
     pic1 = imread('cropped/' + baldwin[i])
-    pic2 = imread('cropped/' + carell[i])
     pic1 = pic1[:, :, 0] / 255.
-    pic2 = pic2[:, :, 0] / 255.
-    x = hstack((pic1, pic2))
+    x = pic1
+    y = array([[1] * 32] * 33)
     theta2 = grad_descent(f, df, x, y, theta2, 0.0000010)
-result_b = 0
+    pic1 = imread('cropped/' + carell[i])
+    pic1 = pic1[:, :, 0] / 255.
+    x = pic1
+    y = array([[-1] * 32] * 33)
+    theta2 = grad_descent(f, df, x, y, theta2, 0.0000010)
+
 baldwin = names_set["baldwin"][:70]
 carell = names_set["carell"][:70]
+result = 0
 for i in range(70):
     pic1 = imread('cropped/' + baldwin[i])
     pic1 = pic1[:, :, 0] / 255.
-    result1 = sum(dot(theta1.T, vstack((ones((1, pic1.shape[1])), pic1))))
-    if result1 > 0:
-        result_b += 1
-
-result_c = 0
-for i in range(70):
+    result1 = dot(theta2.T, vstack((ones((1, pic1.shape[1])), pic1)))
     pic2 = imread('cropped/' + carell[i])
     pic2 = pic2[:, :, 0] / 255.
-    result2 = sum(dot(theta1.T, vstack((ones((1, pic2.shape[1])), pic2))))
-    if result2 < 0:
-        result_c += 1
+    result2 = dot(theta2.T, vstack((ones((1, pic2.shape[1])), pic2)))
+    if determine(result1, 'baldwin'):
+        result += 1
+    if determine(result2, 'carell'):
+        result += 1
 
 print "===============Training Set================"
-print "ACCURARY: Baldwin:",result_b/70.,"Carell:",result_c/70.
+print "ACCURARY for Baldwin: Baldwin:", result / 140.
 
 baldwin = names_set["baldwin"][70:80]
 carell = names_set["carell"][70:80]
-result_b = 0
-baldwin = names_set["baldwin"][:70]
-carell = names_set["carell"][:70]
-for i in range(30):
+result = 0
+for i in range(10):
     pic1 = imread('cropped/' + baldwin[i])
     pic1 = pic1[:, :, 0] / 255.
-    result1 = sum(dot(theta1.T, vstack((ones((1, pic1.shape[1])), pic1))))
-    if result1 > 0:
-        result_b += 1
-
-result_c = 0
-for i in range(30):
+    result1 = dot(theta2.T, vstack((ones((1, pic1.shape[1])), pic1)))
     pic2 = imread('cropped/' + carell[i])
     pic2 = pic2[:, :, 0] / 255.
-    result2 = sum(dot(theta1.T, vstack((ones((1, pic2.shape[1])), pic2))))
-    if result2 < 0:
-        result_c += 1
-print "===============Validating Set================"
-print "ACCURARY: Baldwin:",result_b/70.,"Carell:",result_c/70.
+    result2 = dot(theta2.T, vstack((ones((1, pic2.shape[1])), pic2)))
+    if determine(result1, 'baldwin'):
+        result += 1
+    if determine(result2, 'carell'):
+        result += 1
 
-print theta1
+print "===============Validating Set================"
+print "ACCURARY for Baldwin: Baldwin:", result / 140.
+imsave("t1.png", theta1)
+imsave("t2.png", theta2)
