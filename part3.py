@@ -100,17 +100,17 @@ result = 0
 for i in range(70):
     pic1 = imread('cropped/' + baldwin[i])
     pic1 = pic1[:, :, 0] / 255.
-    result1 = dot(theta2, np.insert(pic1, 0, 1))
+    result1 = dot(theta2, np.insert(pic1.flatten(), 0, 1))
     pic2 = imread('cropped/' + carell[i])
     pic2 = pic2[:, :, 0] / 255.
-    result2 = dot(theta2, np.insert(pic2, 0, 1))
+    result2 = dot(theta2, np.insert(pic2.flatten(), 0, 1))
     if result1 > 0:
         result += 1
     if result2 < 0:
         result += 1
 
 print "===============Training Set================"
-print "ACCURARY for Baldwin: Baldwin:", result / 140.
+print "ACCURARY :", result / 140.
 print "Loss: ", lossHistory1, "\n"
 
 baldwin = names_set["baldwin"][70:80]
@@ -119,17 +119,17 @@ result = 0
 for i in range(10):
     pic1 = imread('cropped/' + baldwin[i])
     pic1 = pic1[:, :, 0] / 255.
-    result1 = dot(theta2, np.insert(pic1, 0, 1))
+    result1 = dot(theta2, np.insert(pic1.flatten(), 0, 1))
     pic2 = imread('cropped/' + carell[i])
     pic2 = pic2[:, :, 0] / 255.
-    result2 = dot(theta2, np.insert(pic2, 0, 1))
+    result2 = dot(theta2, np.insert(pic2.flatten(), 0, 1))
     if result1 > 0:
         result += 1
     if result2 < 0:
         result += 1
 
 print "===============Validating Set================"
-print "ACCURARY for Baldwin: Baldwin:", result / 20.
+print "ACCURARY :", result / 20.
 print "Loss: ", lossHistory2, "\n"
 imsave("t1.png", reconstruct(theta1))
 imsave("t2.png", reconstruct(theta2))

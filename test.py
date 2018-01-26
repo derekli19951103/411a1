@@ -41,6 +41,7 @@ def f(x, y, theta):
 
 
 def df(x, y, theta):
+    print y.shape
     return -2 * sum((y - dot(theta, x.T)) * x.T, 1)
 
 
@@ -55,6 +56,7 @@ def grad_descent(f, df, x, y, init_t, alpha):
     iter = 0
     while norm(t - prev_t) > EPS and iter < max_iter:
         prev_t = t.copy()
+        print df(x,y,t)
         t -= alpha * df(x, y, t)
         iter += 1
         lossHistory.append(f(x, y, theta2))
