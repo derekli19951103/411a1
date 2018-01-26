@@ -11,12 +11,17 @@ import os
 from scipy.ndimage import filters
 import urllib
 
-def determine(data, name):
-    (np.asarray(data) > 0.).sum() / 1024.
-    if name == 'baldwin':
-        return (np.asarray(data) > 0.).sum() > (np.asarray(data) <= 0.).sum()
-    else:
-        return (np.asarray(data) > 0.).sum() < (np.asarray(data) <= 0.).sum()
+def reconstruct(theta):
+    theta = theta[0]
+    result = []
+    interval = range(1, 1025, 32)
+    interval.append(1025)
+    for i in range(len(interval)):
+        if i < len(interval) - 1:
+            result.append(theta[interval[i]:interval[i + 1]])
+        else:
+            break
+    return array(result)
 
 files = os.listdir("cropped")
 act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
@@ -28,18 +33,29 @@ for file in files:
     else:
         names_set[name].append(file)
 
+training = []
+validating = []
+testing = []
+count = 0
+for name, files in names_set.items():
+    for f in files:
+        if count < 70:
+            training.append(f)
+            count += 1
+        if 70 <= count < 80:
+            validating.append(f)
+            count += 1
+        if 80 <= count < 90:
+            testing.append(f)
+            count += 1
+    count = 0
+
 def f(x, y, theta):
-    x = vstack((ones((1, x.shape[1])), x))
-    return sum((y - dot(theta.T, x)) ** 2)
+    return sum((y - dot(theta, x.T)) ** 2)
 
 
 def df(x, y, theta):
-    x = vstack((ones((1, x.shape[1])), x))
-    # print "y ", y.shape
-    # print "t ", theta.shape
-    # print "x_b ", dot(theta.T, x).shape
-    # print "x ", x.shape
-    return -2 * sum((y - dot(theta.T, x)) * x, 1)
+    return -2 * sum((y - dot(theta, x.T)) * x.T, 1)
 
 
 def grad_descent(f, df, x, y, init_t, alpha):
@@ -51,23 +67,25 @@ def grad_descent(f, df, x, y, init_t, alpha):
     while norm(t - prev_t) > EPS and iter < max_iter:
         prev_t = t.copy()
         t -= alpha * df(x, y, t)
-        # if iter % 500 == 0:
-        #     print "Iter", iter
-        #     print "x = (%.2f, %.2f, %.2f), f(x) = %.2f" % (t[0], t[1], t[2], f(x, y, t))
-        #     print "Gradient: ", df(x, y, t), "\n"
         iter += 1
     return t
 
-theta_face=hstack((zeros((33, 1)),vstack((zeros((1, 32)),imread("cropped/baldwin49.jpg")[:,:,0]/255.))))
+y=[]
+x=ones((1,1024))
 for name,files in names_set.items():
-    if name=='baldwin':
-        y = array([[1] * 32] * 33)
-    else:
-        y = array([[-1] * 32] * 33)
     for i in files[:70]:
-        pic1 = imread('cropped/' + i)
-        pic1 = pic1[:, :, 0] / 255.
-        x = pic1
-        theta_face = grad_descent(f, df, x, y, theta_face, 0.0000010)
+        if name == 'baldwin':
+            y.extend([1])
+        else:
+            y.extend([-1])
+        pic = imread('cropped/' + i)[:, :, 0] / 255.
+        x=vstack((x,pic.flatten()))
+y=array(y)
+x=np.delete(x,0,0)
+x = np.c_[ones((len(training), 1)), x]
+theta=ones((1,1025))
+theta = grad_descent(f, df, x, y, theta, 0.0000010)
+lossHistory = f(x, y, theta)
 
-imsave("t4.png",theta_face)
+
+imsave("t4.png",reconstruct(theta))

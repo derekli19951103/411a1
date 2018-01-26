@@ -11,17 +11,19 @@ import os
 from scipy.ndimage import filters
 import urllib
 
+
 def reconstruct(theta):
     theta = theta[0]
     result = []
-    interval = range(1, 1025, 32)
-    interval.append(1025)
+    interval = range(0, 1024, 32)
+    interval.append(1024)
     for i in range(len(interval)):
         if i < len(interval) - 1:
             result.append(theta[interval[i]:interval[i + 1]])
         else:
             break
     return array(result)
+
 
 files = os.listdir("cropped")
 act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
@@ -33,22 +35,6 @@ for file in files:
     else:
         names_set[name].append(file)
 
-training = []
-validating = []
-testing = []
-count = 0
-for name, files in names_set.items():
-    for f in files:
-        if count < 70:
-            training.append(f)
-            count += 1
-        if 70 <= count < 80:
-            validating.append(f)
-            count += 1
-        if 80 <= count < 90:
-            testing.append(f)
-            count += 1
-    count = 0
 
 def f(x, y, theta):
     return sum((y - dot(theta, x.T)) ** 2)
@@ -56,6 +42,9 @@ def f(x, y, theta):
 
 def df(x, y, theta):
     return -2 * sum((y - dot(theta, x.T)) * x.T, 1)
+
+
+lossHistory = []
 
 
 def grad_descent(f, df, x, y, init_t, alpha):
@@ -68,24 +57,42 @@ def grad_descent(f, df, x, y, init_t, alpha):
         prev_t = t.copy()
         t -= alpha * df(x, y, t)
         iter += 1
+        lossHistory.append(f(x, y, theta2))
     return t
 
-y=[]
-x=ones((1,1024))
-for name,files in names_set.items():
-    for i in files[:70]:
-        if name == 'baldwin':
-            y.extend([1])
-        else:
-            y.extend([-1])
-        pic = imread('cropped/' + i)[:, :, 0] / 255.
-        x=vstack((x,pic.flatten()))
-y=array(y)
-x=np.delete(x,0,0)
-x = np.c_[ones((len(training), 1)), x]
-theta=zeros((1,1025))
-theta = grad_descent(f, df, x, y, theta, 0.0000010)
-lossHistory = f(x, y, theta)
 
+lossHistory = []
+baldwin = names_set["baldwin"][70:80]
+carell = names_set["carell"][70:80]
+y = array([[1] * 10 + [-1] * 10])
+pic1 = imread('cropped/' + baldwin[0])[:, :, 0] / 255.
+x = pic1.flatten()
+for i in range(1, 10):
+    pic1 = imread('cropped/' + baldwin[i])[:, :, 0] / 255.
+    x = vstack((x, pic1.flatten()))
+for i in range(10):
+    pic2 = imread('cropped/' + carell[i])[:, :, 0] / 255.
+    x = vstack((x, pic2.flatten()))
+x = np.c_[ones((20, 1)), x]
+theta2 = zeros((1, 1025))
+theta2 = grad_descent(f, df, x, y, theta2, 0.0000010)
 
-imsave("t3.png",reconstruct(theta))
+baldwin = names_set["baldwin"][70:80]
+carell = names_set["carell"][70:80]
+result = 0
+for i in range(10):
+    pic1 = imread('cropped/' + baldwin[i])
+    pic1 = pic1[:, :, 0] / 255.
+    result1 = dot(theta2, np.insert(pic1, 0, 1))
+    pic2 = imread('cropped/' + carell[i])
+    pic2 = pic2[:, :, 0] / 255.
+    result2 = dot(theta2, np.insert(pic2, 0, 1))
+    if result1 > 0:
+        result += 1
+    if result2 < 0:
+        result += 1
+
+print "===============Validating Set================"
+print "ACCURARY for Baldwin: Baldwin:", result / 20.
+print "Loss: ", lossHistory[-1], "\n"
+imsave("test.png", reconstruct(theta2))
