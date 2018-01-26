@@ -65,7 +65,7 @@ def grad_descent(f, df, x, y, init_t, alpha):
 
 
 theta1 = np.random.random_sample((33, 33))
-for i in range(10):
+for i in range(70):
     pic1 = imread('cropped/' + baldwin[i])
     pic1 = pic1[:, :, 0] / 255.
     x = pic1

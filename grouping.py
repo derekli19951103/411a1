@@ -40,12 +40,13 @@ for name, files in names_set.items():
             testing.append(f)
             count += 1
     count = 0
-for it in training:
-    pic = imread("cropped/" + it)
-    mpimg.imsave("training/" + it, pic)
-for it in validating:
-    pic = imread("cropped/" + it)
-    mpimg.imsave("validating/" + it, pic)
-for it in testing:
-    pic = imread("cropped/" + it)
-    mpimg.imsave("testing/" + it, pic)
+print names_set['baldwin'][0]
+# for it in training:
+#     pic = imread("cropped/" + it)
+#     mpimg.imsave("training/" + it, pic)
+# for it in validating:
+#     pic = imread("cropped/" + it)
+#     mpimg.imsave("validating/" + it, pic)
+# for it in testing:
+#     pic = imread("cropped/" + it)
+#     mpimg.imsave("testing/" + it, pic)
