@@ -84,25 +84,39 @@ def run_set(size):
     theta = grad_descent(f, df, x, y, theta, 0.0000010)
 
     """start testing"""
-    result = 0
+    result_t = 0
     for name,files in names_set.items():
         if name in act_nickname:
-            for i in files[:80]:
+            for i in files[:70]:
                 pic1 = imread('cropped/' + i).flatten() / 255.
                 pic1 = np.insert(pic1, 0, 1)
                 pic1 = pic1.T
                 result1 = dot(theta.T, pic1)
                 if name in male and result1>0:
-                    result+=1
+                    result_t+=1
                 if name in female and result1<0:
-                    result1+=1
-    return result/420.,theta
+                    result_t+=1
+    result_v = 0
+    for name, files in names_set.items():
+        if name in act_nickname:
+            for i in files[70:80]:
+                pic1 = imread('cropped/' + i).flatten() / 255.
+                pic1 = np.insert(pic1, 0, 1)
+                pic1 = pic1.T
+                result1 = dot(theta.T, pic1)
+                if name in male and result1 > 0:
+                    result_v += 1
+                if name in female and result1 < 0:
+                    result_v += 1
+    return result_t/420.,result_v/60.,theta
 
-performances=[]
+performances_t=[]
+performances_v=[]
 thetas=[]
 for i in range(10,71):
-    p,t=run_set(i)
-    performances.append(p)
+    p_t,p_v,t=run_set(i)
+    performances_t.append(p_t)
+    performances_t.append(p_v)
     thetas.append(t)
 other=0
 for name,files in names_set.items():
@@ -117,6 +131,12 @@ for name,files in names_set.items():
             if name in female and result1 < 0:
                 other += 1
 print "performance on other 6: ",other/420.
-plt.plot(range(10,71),performances)
-plt.show()
+plt.plot(range(10,71),performances_t)
+plt.xlabel('size per actor')
+plt.ylabel('accuracy rate')
+plt.savefig("part5t.png")
+plt.plot(range(10,71),performances_v)
+plt.xlabel('size per actor')
+plt.ylabel('accuracy rate')
+plt.savefig("part5v.png")
 
