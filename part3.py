@@ -1,26 +1,8 @@
-from pylab import *
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cbook as cbook
-import random
-import time
-from scipy.misc import imsave
-from scipy.misc import imread
-from scipy.misc import imresize
-import matplotlib.image as mpimg
-import os
-from scipy.ndimage import filters
-import urllib
+from grouping import *
 
-files = os.listdir("cropped")
 act = ['Lorraine Bracco', 'Peri Gilpin', 'Angie Harmon', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-names_set = {}
-for file in files:
-    name = ''.join([i for i in file if not i.isdigit()]).split('.')[0]
-    if name not in names_set:
-        names_set[name] = [file]
-    else:
-        names_set[name].append(file)
+names_set, training, validating, testing = group()
+
 
 def f(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
@@ -29,7 +11,7 @@ def f(x, y, theta):
 
 def df(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
-    return -2 * sum((y - dot(theta.T, x)) * x, 1).reshape((1025,1))
+    return -2 * sum((y - dot(theta.T, x)) * x, 1).reshape((1025, 1))
 
 
 def grad_descent(f, df, x, y, init_t, alpha):
@@ -44,6 +26,53 @@ def grad_descent(f, df, x, y, init_t, alpha):
         iter += 1
     return t
 
+
+def grad_descent_for_test(f, df, x, y, init_t, alpha, iter):
+    EPS = 1e-5  # EPS = 10**(-5)
+    prev_t = init_t - 10 * EPS
+    t = init_t.copy()
+    max_iter = iter
+    iter = 0
+    while norm(t - prev_t) > EPS and iter < max_iter:
+        prev_t = t.copy()
+        t -= alpha * df(x, y, t)
+        iter += 1
+    return t
+
+
+def generate_a(start, iterations):
+    a = []
+    for i in range(iterations):
+        a.append(start)
+        start += start
+    return a
+
+
+"""test max iterations and alpha"""
+maxiters = [1000, 10000, 20000, 30000]
+alphas = [0.0001, 0.00001, 0.000001, 1e-6]
+losses = []
+baldwin = names_set["baldwin"][70:80]
+carell = names_set["carell"][70:80]
+y = array([[1] * 10 + [-1] * 10])
+x = imread('cropped/' + baldwin[0]).flatten() / 255.
+for i in range(1, 10):
+    pic1 = imread('cropped/' + baldwin[i]).flatten() / 255.
+    x = vstack((x, pic1))
+for i in range(10):
+    pic2 = imread('cropped/' + carell[i]).flatten() / 255.
+    x = vstack((x, pic2))
+x = x.T
+t = zeros((1025, 1))
+for i in range(4):
+    t = grad_descent_for_test(f, df, x, y, t, alphas[i], maxiters[i])
+    losses.append(f(x, y, t))
+plt.plot([1000, 10000, 20000, 30000], losses)
+plt.ticklabel_format(style='plain', axis='x', useOffset=False)
+plt.xlabel("iter=1000alpha=1e-4,iter=10000alpha=1e-5,iter=20000alpha=1e-6,iter=30000alpha=1e-6")
+plt.ylabel("cost")
+plt.title("iteration&alpha vs. cost")
+plt.savefig("testiteration.png")
 
 """get thetas"""
 baldwin = names_set["baldwin"][:70]
@@ -112,6 +141,6 @@ for i in range(10):
         result_v += 1
 
 print "accuracy for training set: ", result_t / 140.
-print "accuracy for validating set: ",result_v/20.
-print "Loss for training: ", lossHistory1, "\n"
-print "Loss for validating: ", lossHistory2, "\n"
+print "accuracy for validating set: ", result_v / 20.
+print "Loss for training: ", lossHistory1
+print "Loss for validating: ", lossHistory2
