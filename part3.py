@@ -21,9 +21,6 @@ for file in files:
         names_set[name] = [file]
     else:
         names_set[name].append(file)
-baldwin = names_set["baldwin"][:70]
-carell = names_set["carell"][:70]
-
 
 def f(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
@@ -32,7 +29,7 @@ def f(x, y, theta):
 
 def df(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
-    return -2 * sum((y - dot(theta.T, x)) * x, 1, keepdims=True)
+    return -2 * sum((y - dot(theta.T, x)) * x, 1).reshape((1025,1))
 
 
 def grad_descent(f, df, x, y, init_t, alpha):
@@ -80,10 +77,10 @@ theta2 = grad_descent(f, df, x, y, theta2, 1e-6)
 lossHistory2 = f(x, y, theta2)
 
 """start testing"""
-baldwin = names_set["baldwin"][:80]
-carell = names_set["carell"][:80]
-result = 0
-for i in range(80):
+baldwin = names_set["baldwin"][:70]
+carell = names_set["carell"][:70]
+result_t = 0
+for i in range(70):
     pic1 = imread('cropped/' + baldwin[i]).flatten() / 255.
     pic1 = np.insert(pic1, 0, 1)
     pic1 = pic1.T
@@ -93,12 +90,28 @@ for i in range(80):
     pic1 = pic1.T
     result2 = dot(theta1.T, pic1)
     if result1 > 0:
-        result += 1
+        result_t += 1
     if result2 < 0:
-        result += 1
+        result_t += 1
 
-print "===============Result================"
-print "accuracy: ", result / 160.
+baldwin = names_set["baldwin"][70:80]
+carell = names_set["carell"][70:80]
+result_v = 0
+for i in range(10):
+    pic1 = imread('cropped/' + baldwin[i]).flatten() / 255.
+    pic1 = np.insert(pic1, 0, 1)
+    pic1 = pic1.T
+    result1 = dot(theta1.T, pic1)
+    pic1 = imread('cropped/' + carell[i]).flatten() / 255.
+    pic1 = np.insert(pic1, 0, 1)
+    pic1 = pic1.T
+    result2 = dot(theta1.T, pic1)
+    if result1 > 0:
+        result_v += 1
+    if result2 < 0:
+        result_v += 1
+
+print "accuracy for training set: ", result_t / 140.
+print "accuracy for validating set: ",result_v/20.
 print "Loss for training: ", lossHistory1, "\n"
 print "Loss for validating: ", lossHistory2, "\n"
-imsave("training_set.png", np.resize(theta1[1:], (32, 32)))

@@ -59,7 +59,7 @@ def f(x, y, theta):
 
 def df(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
-    return -2 * sum((y - dot(theta.T, x)) * x, 1, keepdims=True)
+    return -2 * sum((y - dot(theta.T, x)) * x, 1).reshape((1025, 1))
 
 
 
@@ -86,6 +86,8 @@ def grad_descent_after(f, df, x, y, init_t, alpha):
         t -= alpha * df(x, y, t)
         iter += 1
     return t
+
+
 
 y=[]
 x=ones((1,1024))

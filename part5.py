@@ -51,7 +51,7 @@ def run_set(size):
 
     def df(x, y, theta):
         x = vstack((ones((1, x.shape[1])), x))
-        return -2 * sum((y - dot(theta.T, x)) * x, 1, keepdims=True)
+        return -2 * sum((y - dot(theta.T, x)) * x, 1).reshape((1025, 1))
 
 
     def grad_descent(f, df, x, y, init_t, alpha):
@@ -113,10 +113,10 @@ def run_set(size):
 performances_t=[]
 performances_v=[]
 thetas=[]
-for i in range(10,71):
+for i in range(2,71):
     p_t,p_v,t=run_set(i)
     performances_t.append(p_t)
-    performances_t.append(p_v)
+    performances_v.append(p_v)
     thetas.append(t)
 other=0
 for name,files in names_set.items():
@@ -131,12 +131,12 @@ for name,files in names_set.items():
             if name in female and result1 < 0:
                 other += 1
 print "performance on other 6: ",other/420.
-plt.plot(range(10,71),performances_t)
+print performances_t
+print performances_v
+plt.plot(range(2,71),performances_t)
+plt.plot(range(2,71),performances_v)
 plt.xlabel('size per actor')
 plt.ylabel('accuracy rate')
-plt.savefig("part5t.png")
-plt.plot(range(10,71),performances_v)
-plt.xlabel('size per actor')
-plt.ylabel('accuracy rate')
-plt.savefig("part5v.png")
+plt.legend(['test on training set', 'test on validating set'], loc='upper left')
+plt.savefig("part5.png")
 

@@ -13,12 +13,12 @@ import urllib
 from scipy.misc import imsave
 
 
-def f(x, y, theta):
+def multi_f(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
     return sum(sum((dot(theta.T, x) - y) ** 2))
 
 
-def df(x, y, theta):
+def mutlti_df(x, y, theta):
     x = vstack((ones((1, x.shape[1])), x))
     return 2 * dot(x, (dot(theta.T, x) - y).T)
 
@@ -78,8 +78,8 @@ y = array(y).T
 x = np.delete(x, 0, 0)
 x = x.T
 theta = zeros((1025, 6))
-theta = grad_descent(f, df, x, y, theta, 0.0000010)
-result = 0
+theta = grad_descent(multi_f, mutlti_df, x, y, theta, 0.0000010)
+result_t = 0
 for name, files in names_set.items():
     if name in act_nickname:
         for i in files[:70]:
@@ -88,13 +88,24 @@ for name, files in names_set.items():
             pic1 = pic1.T
             result1 = dot(theta.T, pic1)
             if np.argmax(result1) == act_labels[name].index(1):
-                result += 1
-print 'accuracy: ', result / 420.
+                result_t += 1
+print 'accuracy for training_set: ', result_t / 420.
+result_v = 0
+for name, files in names_set.items():
+    if name in act_nickname:
+        for i in files[70:80]:
+            pic1 = imread('cropped/' + i).flatten() / 255.
+            pic1 = np.insert(pic1, 0, 1)
+            pic1 = pic1.T
+            result1 = dot(theta.T, pic1)
+            if np.argmax(result1) == act_labels[name].index(1):
+                result_v += 1
+print 'accuracy for validation set: ', result_v / 60.
 print theta[:,0].T[1:]
-imsave('part81.png',np.resize(theta[:,0].T[1:],(32,32)))
-imsave('part82.png',np.resize(theta[:,1].T[1:],(32,32)))
-imsave('part83.png',np.resize(theta[:,2].T[1:],(32,32)))
-imsave('part84.png',np.resize(theta[:,3].T[1:],(32,32)))
-imsave('part85.png',np.resize(theta[:,4].T[1:],(32,32)))
-imsave('part86.png',np.resize(theta[:,5].T[1:],(32,32)))
+imsave('bracco.png',np.resize(theta[:,0].T[1:],(32,32)))
+imsave('gilpin.png',np.resize(theta[:,1].T[1:],(32,32)))
+imsave('harmon.png',np.resize(theta[:,2].T[1:],(32,32)))
+imsave('baldwin.png',np.resize(theta[:,3].T[1:],(32,32)))
+imsave('hader.png',np.resize(theta[:,4].T[1:],(32,32)))
+imsave('carell.png',np.resize(theta[:,5].T[1:],(32,32)))
 

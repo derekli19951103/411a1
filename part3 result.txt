@@ -1,4 +1,0 @@
-===============Training Set================
-ACCURARY for Baldwin: Baldwin: 0.5
-===============Validating Set================
-ACCURARY for Baldwin: Baldwin: 0.0714285714286
