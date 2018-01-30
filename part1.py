@@ -49,6 +49,11 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
 
 testfile = urllib.URLopener()
 
+if not os.path.exists("uncropped"):
+    os.makedirs("uncropped")
+if not os.path.exists("cropped"):
+    os.makedirs("cropped")
+
 for a in all_act:
     name = a.split()[1].lower()
     i = 0
@@ -73,3 +78,26 @@ for a in all_act:
                 pass
             i += 1
 print "part1 done downloading"
+
+files = os.listdir("uncropped")
+names_set_u = {}
+for file in files:
+    name = ''.join([i for i in file if not i.isdigit()]).split('.')[0]
+    if name not in names_set_u:
+        names_set_u[name] = [file]
+    else:
+        names_set_u[name].append(file)
+print "uncropped:"
+for name,files in names_set_u.items():
+    print name,len(files)
+files = os.listdir("cropped")
+names_set_c = {}
+for file in files:
+    name = ''.join([i for i in file if not i.isdigit()]).split('.')[0]
+    if name not in names_set_c:
+        names_set_c[name] = [file]
+    else:
+        names_set_c[name].append(file)
+print "cropped:"
+for name,files in names_set_c.items():
+    print name,len(files)

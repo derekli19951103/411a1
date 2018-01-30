@@ -31,8 +31,6 @@ def run_set(size):
             prev_t = t.copy()
             t -= alpha * df(x, y, t)
             iter += 1
-            if iter%500==0:
-                print f(x,y,t)
         return t
 
     y = []
@@ -79,11 +77,12 @@ def run_set(size):
                     result_v += 1
     return result_t / 420., result_v / 60., theta
 
+
 """run for various sizes"""
 performances_t = []
 performances_v = []
 thetas = []
-for i in range(2, 71):
+for i in range(2, 71, 2):
     p_t, p_v, t = run_set(i)
     performances_t.append(p_t)
     performances_v.append(p_v)
@@ -95,14 +94,15 @@ for name, files in names_set.items():
             pic1 = imread('cropped/' + i).flatten() / 255.
             pic1 = np.insert(pic1, 0, 1)
             pic1 = pic1.T
-            result1 = dot(thetas[-1].T, pic1)
+            result1 = dot(t.T, pic1)
             if name in male and result1 > 0:
                 other += 1
             if name in female and result1 < 0:
                 other += 1
+print "performance on this 6 actors:", performances_t[-1]
 print "performance on other 6 actors: ", other / 420.
-plt.plot(range(2, 71), performances_t)
-plt.plot(range(2, 71), performances_v)
+plt.plot(range(2, 71, 2), performances_t)
+plt.plot(range(2, 71, 2), performances_v)
 plt.xlabel('training size per actor')
 plt.ylabel('accuracy rate')
 plt.title("training size per actor vs. accuracy rate of training and validating set")

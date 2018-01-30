@@ -49,6 +49,7 @@ def generate_a(start, iterations):
 
 
 """test max iterations and alpha"""
+
 maxiters = [1000, 10000, 20000, 30000]
 alphas = [0.0001, 0.00001, 0.000001, 1e-6]
 losses = []
@@ -73,6 +74,48 @@ plt.xlabel("iter=1000alpha=1e-4,iter=10000alpha=1e-5,iter=20000alpha=1e-6,iter=3
 plt.ylabel("cost")
 plt.title("iteration&alpha vs. cost")
 plt.savefig("testiteration.png")
+plt.gca().clear()
+
+"""test alpha"""
+
+alphas = generate_a(1e-6,6)
+accuracy = []
+baldwin = names_set["baldwin"][:70]
+carell = names_set["carell"][:70]
+y = array([[1] * 70 + [-1] * 70])
+x = imread('cropped/' + baldwin[0]).flatten() / 255.
+for i in range(1, 70):
+    pic1 = imread('cropped/' + baldwin[i]).flatten() / 255.
+    x = vstack((x, pic1))
+for i in range(70):
+    pic2 = imread('cropped/' + carell[i]).flatten() / 255.
+    x = vstack((x, pic2))
+x = x.T
+t = zeros((1025, 1))
+for i in range(6):
+    t = grad_descent_for_test(f, df, x, y, t, alphas[i], 30000)
+    baldwin = names_set["baldwin"][70:80]
+    carell = names_set["carell"][70:80]
+    result_t = 0
+    for i in range(10):
+        pic1 = imread('cropped/' + baldwin[i]).flatten() / 255.
+        pic1 = np.insert(pic1, 0, 1)
+        pic1 = pic1.T
+        result1 = dot(t.T, pic1)
+        pic1 = imread('cropped/' + carell[i]).flatten() / 255.
+        pic1 = np.insert(pic1, 0, 1)
+        pic1 = pic1.T
+        result2 = dot(t.T, pic1)
+        if result1 > 0:
+            result_t += 1
+        if result2 < 0:
+            result_t += 1
+    accuracy.append(result_t/20.)
+plt.plot(alphas, accuracy)
+plt.xlabel("alpha")
+plt.ylabel("accuracy")
+plt.title("alpha vs. accuracy")
+plt.savefig("testalpha.png")
 
 """get thetas"""
 baldwin = names_set["baldwin"][:70]
@@ -101,9 +144,7 @@ for i in range(10):
     pic2 = imread('cropped/' + carell[i]).flatten() / 255.
     x = vstack((x, pic2))
 x = x.T
-theta2 = zeros((1025, 1))
-theta2 = grad_descent(f, df, x, y, theta2, 1e-6)
-lossHistory2 = f(x, y, theta2)
+lossHistory2 = f(x, y, theta1)
 
 """start testing"""
 baldwin = names_set["baldwin"][:70]

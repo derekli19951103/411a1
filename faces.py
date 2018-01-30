@@ -1,7 +1,7 @@
 if __name__=="__main__":
-    # print "==============start faces.py================"
-    # print "==============part1================"
-    # # execfile('part1.py')
+    print "==============start faces.py================"
+    print "==============part1================"
+    execfile('part1.py')
     print "==============part3================"
     execfile('part3.py')
     print "==============part4================"
@@ -12,5 +12,5 @@ if __name__=="__main__":
     print "==============part6================"
     execfile('part6d.py')
     print "==============part7,8================"
-    execfile('part7,8.py')
+    execfile('part78.py')
     print "==============done==================="
